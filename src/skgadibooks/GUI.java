@@ -5,9 +5,26 @@
  */
 package skgadibooks;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import jdk.nashorn.internal.parser.JSONParser;
+import org.json.JSONObject;
+
 /**
  *
  * @author gadis
@@ -19,8 +36,7 @@ public class GUI extends javax.swing.JFrame {
      */
     public GUI() {
         initComponents();
-        
-
+        GUIContPane.setVisible(false);
         
     }
 
@@ -36,8 +52,9 @@ public class GUI extends javax.swing.JFrame {
         dbDir = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         Status = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jSplitPane1 = new javax.swing.JSplitPane();
+        MainGUI = new javax.swing.JPanel();
+        GUIContPane = new javax.swing.JPanel();
+        MainSplitter = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         dbEntries = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -45,7 +62,11 @@ public class GUI extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jScrollPane2 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
-        jLabel1 = new javax.swing.JLabel();
+        jButton4 = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
+        jButton7 = new javax.swing.JButton();
+        jButton8 = new javax.swing.JButton();
+        jButton9 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jTextField2 = new javax.swing.JTextField();
         jScrollPane4 = new javax.swing.JScrollPane();
@@ -53,15 +74,33 @@ public class GUI extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         jList2 = new javax.swing.JList();
         jLabel2 = new javax.swing.JLabel();
+        jButton10 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jEditorPane1 = new javax.swing.JEditorPane();
-        dbSearch = new javax.swing.JTextField();
+        jTabbedPane2 = new javax.swing.JTabbedPane();
+        jPanel4 = new javax.swing.JPanel();
+        SearchOnNet = new javax.swing.JButton();
+        jTextField3 = new javax.swing.JTextField();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jTable3 = new javax.swing.JTable();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
+        jButton3 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        HTMLView = new javax.swing.JEditorPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("eLibrary");
 
-        jButton1.setText("Select project");
+        dbDir.setEditable(false);
+        dbDir.setBackground(new java.awt.Color(238, 238, 238));
+        dbDir.setMaximumSize(new java.awt.Dimension(2147483647, 25));
+        dbDir.setMinimumSize(new java.awt.Dimension(6, 25));
+
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/breadcrumb_select_current.png"))); // NOI18N
+        jButton1.setToolTipText("Select a database");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -69,8 +108,10 @@ public class GUI extends javax.swing.JFrame {
         });
 
         Status.setText("Sucessfully loaded.");
+        Status.setToolTipText("Shows the final operation");
+        Status.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
-        jSplitPane1.setDividerLocation(300);
+        MainSplitter.setDividerLocation(500);
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -183,36 +224,68 @@ public class GUI extends javax.swing.JFrame {
 
         jTextField1.setToolTipText("Search from the db entries");
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
+        jList1.setToolTipText("Selected item is linked to the following files");
         jScrollPane2.setViewportView(jList1);
 
-        jLabel1.setText("Linked to the following files");
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/link_add.png"))); // NOI18N
+        jButton4.setToolTipText("Link more files");
+        jButton4.setEnabled(false);
+
+        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/link_delete.png"))); // NOI18N
+        jButton6.setToolTipText("Remove the link to the selected file");
+        jButton6.setEnabled(false);
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+
+        jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/database_add.png"))); // NOI18N
+        jButton7.setToolTipText("Add an entry to the database");
+
+        jButton8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/database_delete.png"))); // NOI18N
+        jButton8.setToolTipText("Delete the selected entry from the database");
+
+        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/arrow_refresh.png"))); // NOI18N
+        jButton9.setToolTipText("Refresh");
 
         javax.swing.GroupLayout dbEntriesLayout = new javax.swing.GroupLayout(dbEntries);
         dbEntries.setLayout(dbEntriesLayout);
         dbEntriesLayout.setHorizontalGroup(
             dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-            .addComponent(jTextField1)
-            .addComponent(jScrollPane2)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
             .addGroup(dbEntriesLayout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addGap(0, 165, Short.MAX_VALUE))
+                .addComponent(jScrollPane2)
+                .addGap(0, 0, 0)
+                .addGroup(dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton6, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING)))
+            .addGroup(dbEntriesLayout.createSequentialGroup()
+                .addComponent(jTextField1)
+                .addGap(0, 0, 0)
+                .addComponent(jButton9)
+                .addGap(0, 0, 0)
+                .addComponent(jButton7)
+                .addGap(0, 0, 0)
+                .addComponent(jButton8))
         );
         dbEntriesLayout.setVerticalGroup(
             dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dbEntriesLayout.createSequentialGroup()
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTextField1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addGroup(dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(dbEntriesLayout.createSequentialGroup()
+                        .addComponent(jButton4)
+                        .addGap(0, 0, 0)
+                        .addComponent(jButton6))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         jTabbedPane1.addTab("Entries", dbEntries);
@@ -241,23 +314,30 @@ public class GUI extends javax.swing.JFrame {
 
         jLabel2.setText("Linked to the following books");
 
+        jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/arrow_refresh.png"))); // NOI18N
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTextField2)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
             .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel2)
-                .addGap(0, 156, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jTextField2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton10))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTextField2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -266,40 +346,133 @@ public class GUI extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Files", jPanel1);
 
+        SearchOnNet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/magnifier.png"))); // NOI18N
+        SearchOnNet.setToolTipText("Search online");
+        SearchOnNet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SearchOnNetActionPerformed(evt);
+            }
+        });
+
+        jTextField3.setToolTipText("Title, ISBN or authors etc.");
+
+        jTable3.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane6.setViewportView(jTable3);
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Google Books" }));
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jTextField3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(SearchOnNet))
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(SearchOnNet)
+                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE))
+        );
+
+        jTabbedPane2.addTab("Search online", jPanel4);
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setFont(new java.awt.Font("Courier New", 0, 18)); // NOI18N
+        jTextArea1.setRows(5);
+        jScrollPane7.setViewportView(jTextArea1);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
+        );
+
+        jTabbedPane2.addTab("BibTeX", jPanel5);
+
+        jButton3.setText("Add to database");
+
+        jButton5.setText("Add to database + Link files");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 294, Short.MAX_VALUE)
+            .addComponent(jTabbedPane2)
+            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jButton5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 339, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jTabbedPane2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton3))
         );
 
-        jTabbedPane1.addTab("Add from Google Books", jPanel3);
+        jTabbedPane1.addTab("Add to db", jPanel3);
 
-        jSplitPane1.setLeftComponent(jTabbedPane1);
+        MainSplitter.setLeftComponent(jTabbedPane1);
 
-        jEditorPane1.setEditable(false);
-        jScrollPane1.setViewportView(jEditorPane1);
+        HTMLView.setEditable(false);
+        jScrollPane8.setViewportView(HTMLView);
 
-        jSplitPane1.setRightComponent(jScrollPane1);
-        jSplitPane1.setRightComponent(dbSearch);
+        MainSplitter.setRightComponent(jScrollPane8);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout GUIContPaneLayout = new javax.swing.GroupLayout(GUIContPane);
+        GUIContPane.setLayout(GUIContPaneLayout);
+        GUIContPaneLayout.setHorizontalGroup(
+            GUIContPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1024, Short.MAX_VALUE)
+            .addGroup(GUIContPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(MainSplitter, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE))
+        );
+        GUIContPaneLayout.setVerticalGroup(
+            GUIContPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 563, Short.MAX_VALUE)
+            .addGroup(GUIContPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(MainSplitter, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout MainGUILayout = new javax.swing.GroupLayout(MainGUI);
+        MainGUI.setLayout(MainGUILayout);
+        MainGUILayout.setHorizontalGroup(
+            MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
-            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE))
+            .addGroup(MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(GUIContPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 369, Short.MAX_VALUE)
-            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
+        MainGUILayout.setVerticalGroup(
+            MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 199, Short.MAX_VALUE)
+            .addGroup(MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(GUIContPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -307,50 +480,80 @@ public class GUI extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(dbDir, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dbDir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
                 .addComponent(jButton1))
-            .addComponent(Status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(MainGUI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(Status, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dbDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Status))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dbDir, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0)
+                .addComponent(MainGUI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(Status, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        /*FolderGUI=(FolderSelect) new FolderSelect(this,true);
-        //FolderGUI.setDefaultCloseOperation(HIDE_ON_CLOSE);
-        FolderGUI.setVisible(true);*/
-        JFileChooser j = new JFileChooser();
-        j.setFileSelectionMode(JFileChooser.OPEN_DIALOG);
-        j.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        Integer opt = j.showOpenDialog(this);
-        if (opt == JFileChooser.APPROVE_OPTION)
-            dbDir.setText(j.getSelectedFile().getPath());
-        else
+
+        jFile.setFileSelectionMode(JFileChooser.OPEN_DIALOG);
+        jFile.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        Integer opt = jFile.showOpenDialog(this);
+        if (opt == JFileChooser.APPROVE_OPTION) {
+            String dbLoc =jFile.getSelectedFile().getPath()+"\\.SKGadiBooksDB";
+            File f = new File(dbLoc);
+            if(f.exists() && !f.isDirectory()) { 
+                OpenDB(dbLoc);
+            } else {
+                int dialogButton = JOptionPane.YES_NO_OPTION;
+                int dialogResult = JOptionPane.showConfirmDialog (null, "The "
+                        + "selected folder is not a project folder.\n"
+                        + "Do you want to make the selected folder as"
+                        + " a new project folder?","Warning",dialogButton);
+                if(dialogResult == JOptionPane.YES_OPTION) {
+                    OpenDB(dbLoc);
+                }
+            }
+        } else {
+            GUIContPane.setVisible(false);
             dbDir.setText(null);
+            StatusUpdate("Database folder not selected");
+        }
 
         String html;
         html="<html><head><title>Simple Page</title></head>";
         html+="<body bgcolor='#777779'><hr/><font size=50>This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content This is Html content </font><hr/>";
         html+="</body></html>";
-        jEditorPane1.setContentType("text/html");
-        jEditorPane1.setText(html);
-        jEditorPane1.setCaretPosition(0);
+        HTMLView.setContentType("text/html");
+        HTMLView.setText(html);
+        HTMLView.setCaretPosition(0);
 
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void SearchOnNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SearchOnNetActionPerformed
+        
+        JSONObject obj;
+        try {
+            //System.out.print(getHTML("https://www.googleapis.com/books/v1/volumes?q=electric"));
+            obj = new JSONObject(getHTML("https://www.googleapis.com/books/v1/volumes?q=electric"));
+            System.out.print(obj.getJSONArray("items").getJSONObject(0).getString("selfLink"));
+            
+        } catch (Exception ex) {
+            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }//GEN-LAST:event_SearchOnNetActionPerformed
 
     /**
      * @param args the command line arguments
@@ -385,37 +588,90 @@ public class GUI extends javax.swing.JFrame {
                 
                 
                 new GUI().setVisible(true);
-                //new SelectFolder();
                 
                 
                 
             }
         });
     }
+    
+    
+    public static String getHTML(String urlToRead) throws Exception {
+        StringBuilder result = new StringBuilder();
+        URL url = new URL(urlToRead);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String line;
+        while ((line = rd.readLine()) != null) {
+           result.append(line);
+        }
+        rd.close();
+        return result.toString();
+    }
+    private boolean StatusUpdate(String Message) {
+        System.out.print(Message);
+        Status.setText(Message);
+        return true;
+    }
+    
+    private void OpenDB(String dbLoc) {
+        try {
+          Class.forName("org.sqlite.JDBC");
+          dbc = DriverManager.getConnection("jdbc:sqlite:"+dbLoc);
+        } catch ( Exception e ) {
+          System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+          System.exit(0);
+        }
+        dbDir.setText(dbLoc);
+        GUIContPane.setVisible(true);
+        MainSplitter.repaint();
+        StatusUpdate("Project is successfully openend.");
+    }
+    
+    Connection dbc = null;
+    JFileChooser jFile = new JFileChooser();
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel GUIContPane;
+    private javax.swing.JEditorPane HTMLView;
+    private javax.swing.JPanel MainGUI;
+    private javax.swing.JSplitPane MainSplitter;
+    private javax.swing.JButton SearchOnNet;
     private javax.swing.JLabel Status;
     private javax.swing.JTextField dbDir;
     private javax.swing.JPanel dbEntries;
-    private javax.swing.JTextField dbSearch;
     private javax.swing.JButton jButton1;
-    private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton jButton10;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButton7;
+    private javax.swing.JButton jButton8;
+    private javax.swing.JButton jButton9;
+    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JList jList1;
     private javax.swing.JList jList2;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
+    private javax.swing.JTable jTable3;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables
 }
