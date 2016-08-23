@@ -5,14 +5,19 @@
  */
 package skgadibooks;
 
+import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +27,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import jdk.nashorn.internal.parser.JSONParser;
 import org.json.JSONObject;
 
@@ -37,7 +44,7 @@ public class GUI extends javax.swing.JFrame {
     public GUI() {
         initComponents();
         GUIContPane.setVisible(false);
-        
+        //FoundBooksList.getColumnModel().getColumn(0).setMinWidth(1);
     }
 
     /**
@@ -66,23 +73,22 @@ public class GUI extends javax.swing.JFrame {
         jButton6 = new javax.swing.JButton();
         jButton7 = new javax.swing.JButton();
         jButton8 = new javax.swing.JButton();
-        jButton9 = new javax.swing.JButton();
+        RefreshDBList = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jTextField2 = new javax.swing.JTextField();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jScrollPane5 = new javax.swing.JScrollPane();
         jList2 = new javax.swing.JList();
-        jLabel2 = new javax.swing.JLabel();
         jButton10 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel4 = new javax.swing.JPanel();
         SearchOnNet = new javax.swing.JButton();
-        jTextField3 = new javax.swing.JTextField();
+        OnlineSearchBar = new javax.swing.JTextField();
         jScrollPane6 = new javax.swing.JScrollPane();
-        jTable3 = new javax.swing.JTable();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        FoundBooksList = new javax.swing.JTable();
+        OnlineProvider = new javax.swing.JComboBox<>();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane7 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -92,7 +98,7 @@ public class GUI extends javax.swing.JFrame {
         HTMLView = new javax.swing.JEditorPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("eLibrary");
+        setTitle("SKGadi Books");
 
         dbDir.setEditable(false);
         dbDir.setBackground(new java.awt.Color(238, 238, 238));
@@ -246,14 +252,19 @@ public class GUI extends javax.swing.JFrame {
         jButton8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/database_delete.png"))); // NOI18N
         jButton8.setToolTipText("Delete the selected entry from the database");
 
-        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/arrow_refresh.png"))); // NOI18N
-        jButton9.setToolTipText("Refresh");
+        RefreshDBList.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/arrow_refresh.png"))); // NOI18N
+        RefreshDBList.setToolTipText("Refresh");
+        RefreshDBList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RefreshDBListActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout dbEntriesLayout = new javax.swing.GroupLayout(dbEntries);
         dbEntries.setLayout(dbEntriesLayout);
         dbEntriesLayout.setHorizontalGroup(
             dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
             .addGroup(dbEntriesLayout.createSequentialGroup()
                 .addComponent(jScrollPane2)
                 .addGap(0, 0, 0)
@@ -263,7 +274,7 @@ public class GUI extends javax.swing.JFrame {
             .addGroup(dbEntriesLayout.createSequentialGroup()
                 .addComponent(jTextField1)
                 .addGap(0, 0, 0)
-                .addComponent(jButton9)
+                .addComponent(RefreshDBList)
                 .addGap(0, 0, 0)
                 .addComponent(jButton7)
                 .addGap(0, 0, 0)
@@ -275,10 +286,10 @@ public class GUI extends javax.swing.JFrame {
                 .addGroup(dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(RefreshDBList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTextField1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addGroup(dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(dbEntriesLayout.createSequentialGroup()
@@ -291,6 +302,11 @@ public class GUI extends javax.swing.JFrame {
         jTabbedPane1.addTab("Entries", dbEntries);
 
         jTextField2.setToolTipText("Sarch the files");
+        jTextField2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField2ActionPerformed(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -310,9 +326,8 @@ public class GUI extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        jList2.setToolTipText("The selected file is avilable in the following books.");
         jScrollPane5.setViewportView(jList2);
-
-        jLabel2.setText("Linked to the following books");
 
         jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/arrow_refresh.png"))); // NOI18N
 
@@ -320,14 +335,11 @@ public class GUI extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
             .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jTextField2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(jButton10))
         );
         jPanel1Layout.setVerticalGroup(
@@ -336,11 +348,9 @@ public class GUI extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTextField2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 78, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -354,69 +364,91 @@ public class GUI extends javax.swing.JFrame {
             }
         });
 
-        jTextField3.setToolTipText("Title, ISBN or authors etc.");
+        OnlineSearchBar.setToolTipText("Title, ISBN or authors etc.");
 
-        jTable3.setModel(new javax.swing.table.DefaultTableModel(
+        FoundBooksList.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "UniqueID", "Title", "Year"
             }
-        ));
-        jScrollPane6.setViewportView(jTable3);
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Google Books" }));
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        FoundBooksList.setToolTipText("Select a row to display its details.");
+        jScrollPane6.setViewportView(FoundBooksList);
+
+        OnlineProvider.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Google Books" }));
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jTextField3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(OnlineSearchBar)
+                .addGap(0, 0, 0)
+                .addComponent(OnlineProvider, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
                 .addComponent(SearchOnNet))
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(SearchOnNet)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE))
+                    .addComponent(OnlineSearchBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(OnlineProvider, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(SearchOnNet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Search online", jPanel4);
 
         jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Courier New", 0, 18)); // NOI18N
+        jTextArea1.setFont(new java.awt.Font("Courier New", 0, 12)); // NOI18N
+        jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
+        jTextArea1.setTabSize(5);
+        jTextArea1.setToolTipText("Type/paste BibTeX code here.");
         jScrollPane7.setViewportView(jTextArea1);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("BibTeX", jPanel5);
 
         jButton3.setText("Add to database");
+        jButton3.setEnabled(false);
 
         jButton5.setText("Add to database + Link files");
+        jButton5.setEnabled(false);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -430,9 +462,9 @@ public class GUI extends javax.swing.JFrame {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jTabbedPane2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(jButton5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(jButton3))
         );
 
@@ -470,7 +502,7 @@ public class GUI extends javax.swing.JFrame {
         );
         MainGUILayout.setVerticalGroup(
             MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 199, Short.MAX_VALUE)
+            .addGap(0, 257, Short.MAX_VALUE)
             .addGroup(MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(GUIContPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -484,7 +516,7 @@ public class GUI extends javax.swing.JFrame {
                 .addGap(0, 0, 0)
                 .addComponent(jButton1))
             .addComponent(MainGUI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(Status, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
+            .addComponent(Status, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -519,13 +551,11 @@ public class GUI extends javax.swing.JFrame {
                         + " a new project folder?","Warning",dialogButton);
                 if(dialogResult == JOptionPane.YES_OPTION) {
                     OpenDB(dbLoc);
+                    CreateDBTables();
                 }
             }
-        } else {
-            GUIContPane.setVisible(false);
-            dbDir.setText(null);
-            StatusUpdate("Database folder not selected");
-        }
+        } else
+            StatusUpdate("User didn't select new project");
 
         String html;
         html="<html><head><title>Simple Page</title></head>";
@@ -542,18 +572,38 @@ public class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void SearchOnNetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SearchOnNetActionPerformed
-        
         JSONObject obj;
         try {
-            //System.out.print(getHTML("https://www.googleapis.com/books/v1/volumes?q=electric"));
-            obj = new JSONObject(getHTML("https://www.googleapis.com/books/v1/volumes?q=electric"));
-            System.out.print(obj.getJSONArray("items").getJSONObject(0).getString("selfLink"));
+            if (!OnlineSearchBar.getText().isEmpty()) {
+                if (OnlineProvider.getSelectedIndex() == 0) {
+                    obj = new JSONObject(getHTML("https://www.googleapis.com/books/v1/volumes?q="+
+                            URLEncoder.encode(OnlineSearchBar.getText(),"UTF-8")));
+                    System.out.print(obj.getJSONArray("items").getJSONObject(0).getString("selfLink"));
+                    DefaultTableModel FndBksLst = (DefaultTableModel) FoundBooksList.getModel();
+                    int rowCount = FndBksLst.getRowCount();
+                    for (int i = rowCount - 1; i >= 0; i--) {
+                        FndBksLst.removeRow(0);
+                    }
+                    FndBksLst.addRow(new Object[]{"Column 1", "Column 2", "Column 3"});
+                }
+            } else {
+                StatusUpdate("Query cannot be empty to search online.");
+            }
+            
             
         } catch (Exception ex) {
             Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }//GEN-LAST:event_SearchOnNetActionPerformed
+
+    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField2ActionPerformed
+
+    private void RefreshDBListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RefreshDBListActionPerformed
+        
+    }//GEN-LAST:event_RefreshDBListActionPerformed
 
     /**
      * @param args the command line arguments
@@ -628,14 +678,35 @@ public class GUI extends javax.swing.JFrame {
         MainSplitter.repaint();
         StatusUpdate("Project is successfully openend.");
     }
-    
+    private void CreateDBTables () {
+        try {
+            stmt = dbc.createStatement();
+            String sql = "CREATE TABLE Books "
+                    + "(Title TEXT NOT NULL," 
+                    + "UniqueID TEXT NOT NULL)";
+            stmt.executeUpdate(sql);
+            sql = "CREATE TABLE BDetails"
+                    + "(UniqueID TEXT NOT NULL,"
+                    + "Property TEXT NOT NULL,"
+                    + "Value TEXT NOT NULL)";
+            stmt.executeUpdate(sql);            
+        } catch (SQLException ex) {
+            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        StatusUpdate("New database is created along with tables.");
+    }
     Connection dbc = null;
+    Statement stmt = null;
     JFileChooser jFile = new JFileChooser();
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable FoundBooksList;
     private javax.swing.JPanel GUIContPane;
     private javax.swing.JEditorPane HTMLView;
     private javax.swing.JPanel MainGUI;
     private javax.swing.JSplitPane MainSplitter;
+    private javax.swing.JComboBox<String> OnlineProvider;
+    private javax.swing.JTextField OnlineSearchBar;
+    private javax.swing.JButton RefreshDBList;
     private javax.swing.JButton SearchOnNet;
     private javax.swing.JLabel Status;
     private javax.swing.JTextField dbDir;
@@ -648,9 +719,6 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
-    private javax.swing.JButton jButton9;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JList jList1;
     private javax.swing.JList jList2;
     private javax.swing.JPanel jPanel1;
@@ -668,10 +736,8 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
-    private javax.swing.JTable jTable3;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables
 }
