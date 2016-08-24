@@ -23,14 +23,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.scene.input.KeyCode;
 import javax.imageio.ImageIO;
+import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import jdk.nashorn.internal.parser.JSONParser;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -49,6 +55,20 @@ public class GUI extends javax.swing.JFrame {
         FoundBooksList.getColumnModel().getColumn(0).setPreferredWidth(10);
         FoundBooksList.getColumnModel().getColumn(1).setPreferredWidth(300);
         FoundBooksList.getColumnModel().getColumn(2).setPreferredWidth(10);
+        FoundBooksList.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        FoundBooksList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent evt) {
+                if (!evt.getValueIsAdjusting()) {
+                    if (RunFoundBooksListSelected)
+                        FoundBooksListSelected (evt);
+                    /*else
+                        RunFoundBooksListSelected=true;*/
+                }
+            }
+        });
+        
+        
+        
     }
 
     /**
@@ -72,7 +92,7 @@ public class GUI extends javax.swing.JFrame {
         jTable2 = new javax.swing.JTable();
         jTextField1 = new javax.swing.JTextField();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
+        LinkedFilesList = new javax.swing.JList();
         jButton4 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
         jButton7 = new javax.swing.JButton();
@@ -96,9 +116,9 @@ public class GUI extends javax.swing.JFrame {
         jPanel5 = new javax.swing.JPanel();
         jScrollPane7 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        jButton3 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jScrollPane8 = new javax.swing.JScrollPane();
+        AddoDBItem = new javax.swing.JButton();
+        AddoDBItemNLink = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
         HTMLView = new javax.swing.JEditorPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -234,8 +254,8 @@ public class GUI extends javax.swing.JFrame {
 
         jTextField1.setToolTipText("Search from the db entries");
 
-        jList1.setToolTipText("Selected item is linked to the following files");
-        jScrollPane2.setViewportView(jList1);
+        LinkedFilesList.setToolTipText("Selected item is linked to the following files");
+        jScrollPane2.setViewportView(LinkedFilesList);
 
         jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skgadibooks/images/FatCow_Icons16x16/link_add.png"))); // NOI18N
         jButton4.setToolTipText("Link more files");
@@ -268,9 +288,9 @@ public class GUI extends javax.swing.JFrame {
         dbEntries.setLayout(dbEntriesLayout);
         dbEntriesLayout.setHorizontalGroup(
             dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
             .addGroup(dbEntriesLayout.createSequentialGroup()
-                .addComponent(jScrollPane2)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addGroup(dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton6, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -293,7 +313,7 @@ public class GUI extends javax.swing.JFrame {
                     .addComponent(RefreshDBList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTextField1))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1985, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addGroup(dbEntriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(dbEntriesLayout.createSequentialGroup()
@@ -339,7 +359,7 @@ public class GUI extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
             .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jTextField2)
@@ -353,7 +373,7 @@ public class GUI extends javax.swing.JFrame {
                     .addComponent(jButton10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTextField2))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 2002, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -413,7 +433,7 @@ public class GUI extends javax.swing.JFrame {
                 .addComponent(OnlineProvider, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(SearchOnNet))
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -424,7 +444,7 @@ public class GUI extends javax.swing.JFrame {
                         .addComponent(OnlineProvider, javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(SearchOnNet, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 1962, Short.MAX_VALUE))
         );
 
         jTabbedPane2.addTab("Search online", jPanel4);
@@ -441,55 +461,54 @@ public class GUI extends javax.swing.JFrame {
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 1987, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("BibTeX", jPanel5);
 
-        jButton3.setText("Add to database");
-        jButton3.setEnabled(false);
+        AddoDBItem.setText("Add to database");
+        AddoDBItem.setEnabled(false);
 
-        jButton5.setText("Add to database + Link files");
-        jButton5.setEnabled(false);
+        AddoDBItemNLink.setText("Add to database + Link files");
+        AddoDBItemNLink.setEnabled(false);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jTabbedPane2)
-            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jButton5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(AddoDBItem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(AddoDBItemNLink, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jTabbedPane2)
                 .addGap(0, 0, 0)
-                .addComponent(jButton5)
+                .addComponent(AddoDBItemNLink)
                 .addGap(0, 0, 0)
-                .addComponent(jButton3))
+                .addComponent(AddoDBItem))
         );
 
         jTabbedPane1.addTab("Add to db", jPanel3);
 
         MainSplitter.setLeftComponent(jTabbedPane1);
 
-        HTMLView.setEditable(false);
-        jScrollPane8.setViewportView(HTMLView);
+        jScrollPane1.setViewportView(HTMLView);
 
-        MainSplitter.setRightComponent(jScrollPane8);
+        MainSplitter.setRightComponent(jScrollPane1);
 
         javax.swing.GroupLayout GUIContPaneLayout = new javax.swing.GroupLayout(GUIContPane);
         GUIContPane.setLayout(GUIContPaneLayout);
         GUIContPaneLayout.setHorizontalGroup(
             GUIContPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1024, Short.MAX_VALUE)
+            .addGap(0, 1020, Short.MAX_VALUE)
             .addGroup(GUIContPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(MainSplitter, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE))
+                .addComponent(MainSplitter, javax.swing.GroupLayout.DEFAULT_SIZE, 1020, Short.MAX_VALUE))
         );
         GUIContPaneLayout.setVerticalGroup(
             GUIContPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -508,7 +527,7 @@ public class GUI extends javax.swing.JFrame {
         );
         MainGUILayout.setVerticalGroup(
             MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 257, Short.MAX_VALUE)
+            .addGap(0, 2091, Short.MAX_VALUE)
             .addGroup(MainGUILayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(GUIContPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -522,7 +541,7 @@ public class GUI extends javax.swing.JFrame {
                 .addGap(0, 0, 0)
                 .addComponent(jButton1))
             .addComponent(MainGUI, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(Status, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+            .addComponent(Status, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1659, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -561,7 +580,7 @@ public class GUI extends javax.swing.JFrame {
                 }
             }
         } else
-            StatusUpdate("User didn't select new project");
+            SetStatus("User didn't select new project");
 
         String html;
         html="<html><head><title>Simple Page</title></head>";
@@ -582,6 +601,9 @@ public class GUI extends javax.swing.JFrame {
         try {
             if (!OnlineSearchBar.getText().isEmpty()) {
                 if (OnlineProvider.getSelectedIndex() == 0) {
+                    AddoDBItemNLink.setEnabled(false);
+                    AddoDBItem.setEnabled(false);
+                    RunFoundBooksListSelected = false;
                     obj = new JSONObject(getHTML("https://www.googleapis.com/books/v1/volumes?"
                             + "maxResults=40&q=" +
                             URLEncoder.encode(OnlineSearchBar.getText(),"UTF-8")));
@@ -591,13 +613,13 @@ public class GUI extends javax.swing.JFrame {
                     for (int i = rowCount - 1; i >= 0; i--) {
                         FndBksLst.removeRow(0);
                     }
-                    StatusUpdate("Found "+obj.getInt("totalItems")+" results in"
+                    SetStatus("Found "+obj.getInt("totalItems")+" results in"
                             + " Google books. Top 40 results are shown here.");
                     if (obj.getInt("totalItems")>0) {
                         for (int i = 0; i < obj.getJSONArray("items").length(); i++) {
                             String Date="N/A";
                             if (obj.getJSONArray("items").getJSONObject(i).getJSONObject("volumeInfo").has("publishedDate"))
-                                Date = obj.getJSONArray("items").getJSONObject(0).getJSONObject("volumeInfo").getString("publishedDate");
+                                Date = obj.getJSONArray("items").getJSONObject(i).getJSONObject("volumeInfo").getString("publishedDate");
                             FndBksLst.addRow(new Object[]{
                                 obj.getJSONArray("items").getJSONObject(i).getString("id"),
                                 obj.getJSONArray("items").getJSONObject(i).getJSONObject("volumeInfo").getString("title"),
@@ -605,17 +627,15 @@ public class GUI extends javax.swing.JFrame {
                             });
                         }
                     }
-                    
+                    RunFoundBooksListSelected = true;
                 }
             } else {
-                StatusUpdate("Query cannot be empty to search online.");
+                SetStatus("Query cannot be empty to search online.");
             }
-            
-            
         } catch (Exception ex) {
             Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+            SetStatus("Unable to connect to the server.");
         }
-
     }//GEN-LAST:event_SearchOnNetActionPerformed
 
     private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
@@ -672,6 +692,80 @@ public class GUI extends javax.swing.JFrame {
         });
     }
     
+    private boolean RunFoundBooksListSelected;
+    private int FoundBooksPosition;
+    private void FoundBooksListSelected (ListSelectionEvent evt) {
+        AddoDBItemNLink.setEnabled(true);
+        AddoDBItem.setEnabled(true);
+        DefaultTableModel FndBksLst = (DefaultTableModel) FoundBooksList.getModel();
+        if (evt.getFirstIndex() == FoundBooksPosition)
+            FoundBooksPosition = evt.getLastIndex();
+        else
+            FoundBooksPosition = evt.getFirstIndex();
+        SetStatus("Displaying the book: "+FndBksLst.getValueAt(FoundBooksPosition, 0).toString());
+        try {
+            JSONObject obj;
+            obj = new JSONObject(getHTML("https://www.googleapis.com/books/v1/volumes/"        
+                    + FndBksLst.getValueAt(FoundBooksPosition, 0).toString()));
+            String html = "<html><head><meta charset=\"utf-8\" /> </head><body>";
+            html+= "<h1>"
+                    + obj.getJSONObject("volumeInfo").getString("title")
+                    + "</h1>";
+            /*if (obj.getJSONObject("volumeInfo").has("imageLinks"))
+                    if (obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").has("extraLarge"))
+                        html+= "<img src=\""
+                                +obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").getString("extraLarge")
+                                + "\"" 
+                                +"align=\"left\""
+                                + "width=\"50%\">";
+                    else if (obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").has("large"))
+                        html+= "<img src=\""
+                                +obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").getString("large")
+                                + "\"" 
+                                +"align=\"left\""
+                                + "width=\"50%\">";
+                    else if (obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").has("medium"))
+                        html+= "<img src=\""
+                                +obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").getString("medium")
+                                + "\"" 
+                                +"align=\"left\""
+                                + "width=\"50%\">";
+                    else if (obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").has("small"))
+                        html+= "<img src=\""
+                                +obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").getString("small")
+                                + "\"" 
+                                +"align=\"left\""
+                                + "width=\"50%\">";
+                    else if (obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").has("thumbnail"))
+                        html+= "<img src=\""
+                                +obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").getString("thumbnail")
+                                + "\"" 
+                                +"align=\"left\""
+                                + "width=\"50%\">";
+                    else if (obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").has("smallThumbnail"))
+                        html+= "<img src=\""
+                                +obj.getJSONObject("volumeInfo").getJSONObject("imageLinks").getString("smallThumbnail")
+                                + "\"" 
+                                +"align=\"left\""
+                                + "width=\"50%\">";
+              */
+            html+= "<img src=\"http://books.google.com.mx/books/content?id=it8AJhOrDmsC&printsec=frontcover&img=1&zoom=6&edge=curl&imgtk=AFLRE73Qyt_wCQiptltwq48dpRHNRHlIHAu33q4ENMEL53xf9QSPmmQgIjmzvCX4zLeoUloYPcI3087drmMVp85W5bTSblAadXG66msZJoNnNFetMiOo_tFKszJgLFNWaoFRWbhxtaiK&source=gbs_api\" style=\"width:30px;height:30px;\" />";
+            html+= "&#9997; &#10057;";
+            for (int i=0; i<obj.getJSONObject("volumeInfo").getJSONArray("authors").length();i++)
+                html+= " " 
+                        + obj.getJSONObject("volumeInfo").getJSONArray("authors").getString(i)
+                        + " &#10057;";
+            html+= "</body></html>";
+            SetStatus(html);
+            
+            HTMLView.setText(html);
+            HTMLView.setCaretPosition(0);
+        } catch (JSONException ex) {
+            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     
     public static String getHTML(String urlToRead) throws Exception {
         StringBuilder result = new StringBuilder();
@@ -686,7 +780,7 @@ public class GUI extends javax.swing.JFrame {
         rd.close();
         return result.toString();
     }
-    private boolean StatusUpdate(String Message) {
+    private boolean SetStatus(String Message) {
         System.out.println(Message);
         Status.setText(Message);
         return true;
@@ -703,7 +797,7 @@ public class GUI extends javax.swing.JFrame {
         dbDir.setText(dbLoc);
         GUIContPane.setVisible(true);
         MainSplitter.repaint();
-        StatusUpdate("Project is successfully openend.");
+        SetStatus("Project is successfully openend.");
     }
     private void CreateDBTables () {
         try {
@@ -720,15 +814,19 @@ public class GUI extends javax.swing.JFrame {
         } catch (SQLException ex) {
             Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        StatusUpdate("New database is created along with tables.");
+        SetStatus("New database is created along with tables.");
     }
     Connection dbc = null;
     Statement stmt = null;
     JFileChooser jFile = new JFileChooser();
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton AddoDBItem;
+    private javax.swing.JButton AddoDBItemNLink;
     private javax.swing.JTable FoundBooksList;
     private javax.swing.JPanel GUIContPane;
     private javax.swing.JEditorPane HTMLView;
+    private javax.swing.JList LinkedFilesList;
     private javax.swing.JPanel MainGUI;
     private javax.swing.JSplitPane MainSplitter;
     private javax.swing.JComboBox<String> OnlineProvider;
@@ -740,25 +838,22 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JPanel dbEntries;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton10;
-    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
-    private javax.swing.JList jList1;
     private javax.swing.JList jList2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
-    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTable jTable1;
