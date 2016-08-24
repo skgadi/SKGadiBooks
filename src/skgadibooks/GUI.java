@@ -21,6 +21,7 @@ import java.net.URLEncoder;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.input.KeyCode;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -44,7 +45,10 @@ public class GUI extends javax.swing.JFrame {
     public GUI() {
         initComponents();
         GUIContPane.setVisible(false);
-        //FoundBooksList.getColumnModel().getColumn(0).setMinWidth(1);
+        FoundBooksList.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        FoundBooksList.getColumnModel().getColumn(0).setPreferredWidth(10);
+        FoundBooksList.getColumnModel().getColumn(1).setPreferredWidth(300);
+        FoundBooksList.getColumnModel().getColumn(2).setPreferredWidth(10);
     }
 
     /**
@@ -365,13 +369,15 @@ public class GUI extends javax.swing.JFrame {
         });
 
         OnlineSearchBar.setToolTipText("Title, ISBN or authors etc.");
+        OnlineSearchBar.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                OnlineSearchBarKeyPressed(evt);
+            }
+        });
 
         FoundBooksList.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+
             },
             new String [] {
                 "UniqueID", "Title", "Year"
@@ -576,15 +582,30 @@ public class GUI extends javax.swing.JFrame {
         try {
             if (!OnlineSearchBar.getText().isEmpty()) {
                 if (OnlineProvider.getSelectedIndex() == 0) {
-                    obj = new JSONObject(getHTML("https://www.googleapis.com/books/v1/volumes?q="+
+                    obj = new JSONObject(getHTML("https://www.googleapis.com/books/v1/volumes?"
+                            + "maxResults=40&q=" +
                             URLEncoder.encode(OnlineSearchBar.getText(),"UTF-8")));
-                    System.out.print(obj.getJSONArray("items").getJSONObject(0).getString("selfLink"));
                     DefaultTableModel FndBksLst = (DefaultTableModel) FoundBooksList.getModel();
                     int rowCount = FndBksLst.getRowCount();
+                    //Remove all the rows
                     for (int i = rowCount - 1; i >= 0; i--) {
                         FndBksLst.removeRow(0);
                     }
-                    FndBksLst.addRow(new Object[]{"Column 1", "Column 2", "Column 3"});
+                    StatusUpdate("Found "+obj.getInt("totalItems")+" results in"
+                            + " Google books. Top 40 results are shown here.");
+                    if (obj.getInt("totalItems")>0) {
+                        for (int i = 0; i < obj.getJSONArray("items").length(); i++) {
+                            String Date="N/A";
+                            if (obj.getJSONArray("items").getJSONObject(i).getJSONObject("volumeInfo").has("publishedDate"))
+                                Date = obj.getJSONArray("items").getJSONObject(0).getJSONObject("volumeInfo").getString("publishedDate");
+                            FndBksLst.addRow(new Object[]{
+                                obj.getJSONArray("items").getJSONObject(i).getString("id"),
+                                obj.getJSONArray("items").getJSONObject(i).getJSONObject("volumeInfo").getString("title"),
+                                Date
+                            });
+                        }
+                    }
+                    
                 }
             } else {
                 StatusUpdate("Query cannot be empty to search online.");
@@ -604,6 +625,12 @@ public class GUI extends javax.swing.JFrame {
     private void RefreshDBListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RefreshDBListActionPerformed
         
     }//GEN-LAST:event_RefreshDBListActionPerformed
+
+    private void OnlineSearchBarKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_OnlineSearchBarKeyPressed
+        // TODO add your handling code here:
+        if (evt.getKeyCode() == 10)
+            SearchOnNet.doClick();
+    }//GEN-LAST:event_OnlineSearchBarKeyPressed
 
     /**
      * @param args the command line arguments
@@ -660,7 +687,7 @@ public class GUI extends javax.swing.JFrame {
         return result.toString();
     }
     private boolean StatusUpdate(String Message) {
-        System.out.print(Message);
+        System.out.println(Message);
         Status.setText(Message);
         return true;
     }
